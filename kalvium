@@ -1,0 +1,54 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+url = "https://results.eci.gov.in"
+response = requests.get(url)
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# Extract data from the webpage
+data = []
+for row in soup.find_all('tr'):
+    cols = row.find_all('td')
+    if len(cols) > 0:
+        data.append([col.text.strip() for col in cols])
+
+# Create a Pandas dataframe
+df = pd.DataFrame(data, columns=['constituency_name', 'state_name', 'winner_name', 'winner_party', 'votes_polled', 'margin']
+# Insight 1: Total number of constituencies
+print("Insight 1: Total number of constituencies:", df.shape[0])
+# Insight 2: Top 5 states with the most number of constituencies
+top_states = df['state'].value_counts().head(5)
+print("Insight 2: Top 5 states with the most number of constituencies:")
+print(top_states)
+# Insight 3: Party-wise seat distribution
+party_seats = df['Party'].value_counts()
+print("Insight 3: Party-wise seat distribution:")
+print(party_seats)
+# Insight 4: Top 5 parties with the most number of seats
+top_parties = party_seats.head(5)
+print("Insight 4: Top 5 parties with the most number of seats:")
+print(top_parties)
+# Insight 5: State-wise winning party distribution
+state_party = df.groupby('State')['Party'].value_counts().unstack().fillna(0)
+print("Insight 5: State-wise winning party distribution:")
+print(state_party)
+# Insight 6: Constituency-wise winning margin
+winning_margin = df['Winning Margin'].mean()
+print("Insight 6: Average winning margin:", winning_margin)
+# Insight 7: Top 5 constituencies with the highest winning margin
+top_constituencies = df.nlargest(5, 'Winning Margin')
+print("Insight 7: Top 5 constituencies with the highest winning margin:")
+print(top_constituencies)
+# Insight 8: Gender-wise distribution of winners
+gender_distribution = df['Winner Gender'].value_counts()
+print("Insight 8: Gender-wise distribution of winners:")
+print(gender_distribution)
+# Insight 9: Age-wise distribution of winners
+age_distribution = df['Winner Age'].value_counts(bins=[20, 30, 40, 50, 60, 70, 80])
+print("Insight 9: Age-wise distribution of winners:")
+print(age_distribution)
+# Insight 10: Education-wise distribution of winners
+education_distribution = df['Winner Education'].value_counts()
+print("Insight 10: Education-wise distribution of winners:")
+print(education_distribution)
